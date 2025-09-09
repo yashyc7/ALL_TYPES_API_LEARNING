@@ -1,0 +1,23 @@
+[project]
+name = "all-api-types-learning"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Yash Chauhan",email = "yashc9411407582@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "djangorestframework (>=3.16.1,<4.0.0)",
+    "django (>=5.2.6,<6.0.0)",
+    "drf-yasg (>=1.21.10,<2.0.0)",
+    "djangorestframework-simplejwt[blacklist] (>=5.5.1,<6.0.0)",
+    "django-filter (>=25.1,<26.0)",
+    "pillow (>=11.3.0,<12.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
