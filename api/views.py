@@ -14,8 +14,11 @@ from .serializers import (
     LogoutSerializer,
     RefreshSerializer,
     UserFileSerializer,
+    ProfileSerializer,
+    BookSerializer,
+    ReaderSerializer,
 )
-from .models import UserProfile, UserFile
+from .models import UserProfile, UserFile, Profile, Book, Reader
 
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.http import FileResponse
@@ -205,3 +208,29 @@ class AuthViewset(viewsets.ViewSet):
             return Response(
                 {"error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST
             )
+
+
+# nested and the related fields api responses
+# select related and the prefetch realted meaning below
+# “Hey, when you fetch Profile, also bring the related author object in the same SQL query.”
+
+
+class ProfileViewset(viewsets.ViewSet):
+    def list(self, request):
+        profiles = Profile.objects.select_related("author")
+        serializer = ProfileSerializer(profiles, many=True)
+        return Response(serializer.data)
+
+
+class BookViewset(viewsets.ViewSet):
+    def list(self, request):
+        books = Book.objects.select_related("author")
+        serializer = BookSerializer(books, many=True)
+        return Response(serializer.data)
+
+
+class ReaderViewset(viewsets.ViewSet):
+    def list(self, request):
+        readers = Reader.objects.prefetch_related("books")
+        serializer = ReaderSerializer(readers, many=True)
+        return Response(serializer.data)

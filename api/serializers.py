@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import UserFile
+from .models import UserFile, Profile, Book, Reader
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -37,3 +37,43 @@ class UserFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserFile
         fields = ["profile_pic"]
+
+
+##Now learning about the nested and the related data api's
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email"]
+
+
+# Profile serializer (nested user )
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Profile
+        fields = ["id", "bio", "website", "author"]
+
+
+# Book Serializer (Nested is user )
+
+
+class BookSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Book
+        fields = ["id", "title", "author"]
+
+
+# Reader Serializer (nested Books)
+class ReaderSerializer(serializers.ModelSerializer):
+    books = BookSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Reader
+        fields = ["id", "name", "books"]
