@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from .models import UserFile
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -32,7 +33,7 @@ class RefreshSerializer(serializers.Serializer):
     refresh = serializers.CharField()
 
 
-class UserProfileUploadSerializer(serializers.Serializer):
+class UserFileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserProfileSerializer
+        model = UserFile
         fields = ["profile_pic"]

@@ -5,14 +5,22 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 
 from .serializers import (
     UserProfileSerializer,
     LoginSerializer,
     LogoutSerializer,
     RefreshSerializer,
+    UserFileSerializer,
 )
-from .models import UserProfile   # if you are using a custom UserProfile model
+from .models import UserProfile, UserFile
+
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.http import FileResponse
+import os
+from django.contrib.auth.models import User
 
 
 # ----------------- User CRUD -----------------
@@ -71,7 +79,59 @@ class UserViewset(viewsets.ViewSet):
         user.is_active = True
         user.save()
         return Response({"status": "User activated"})
-        
+
+    # image upload and download feature
+    upload_profile_pic_params = [
+        openapi.Parameter(
+            "profile_pic",
+            openapi.IN_FORM,
+            description="Upload a profile picture",
+            type=openapi.TYPE_FILE,
+            required=True,
+        ),
+    ]
+
+    @swagger_auto_schema(
+        method="post",
+        manual_parameters=upload_profile_pic_params,
+        responses={200: "Profile picture uploaded!"},
+    )
+    @action(detail=True, methods=["post"], parser_classes=[MultiPartParser, FormParser])
+    def upload_profile_pic(self, request, pk=None):
+        try:
+            user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = UserFileSerializer(data=request.data)
+        if serializer.is_valid():
+            user_file, _ = UserFile.objects.get_or_create(user=user)
+            user_file.profile_pic = serializer.validated_data["profile_pic"]
+            user_file.save()
+            return Response({"message": "Profile picture saved!"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=["get"])
+    def download_profile_pic(self, request, pk=None):
+        try:
+            user_file = UserFile.objects.get(user__pk=pk)
+        except UserFile.DoesNotExist:
+            return Response(
+                {"error": "No file found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        if not user_file.profile_pic:
+            return Response(
+                {"error": "No profile picture uploaded"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        file_path = user_file.profile_pic.path
+        return FileResponse(
+            open(file_path, "rb"),
+            as_attachment=True,
+            filename=os.path.basename(file_path),
+        )
+
 
 # ----------------- Auth APIs -----------------
 class AuthViewset(viewsets.ViewSet):
@@ -100,9 +160,13 @@ class AuthViewset(viewsets.ViewSet):
             refresh_token = serializer.validated_data["refresh"]
             token = RefreshToken(refresh_token)
             token.blacklist()
-            return Response({"message": "Logged out succesfully"}, status=status.HTTP_200_OK)
+            return Response(
+                {"message": "Logged out succesfully"}, status=status.HTTP_200_OK
+            )
         except Exception:
-            return Response({"error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
     @swagger_auto_schema(request_body=LoginSerializer)
     @action(detail=False, methods=["post"], permission_classes=[AllowAny])
@@ -112,7 +176,9 @@ class AuthViewset(viewsets.ViewSet):
 
         user = authenticate(**serializer.validated_data)
         if user is None:
-            return Response({"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         refresh = RefreshToken.for_user(user=user)
         return Response(
@@ -136,4 +202,6 @@ class AuthViewset(viewsets.ViewSet):
             refresh = RefreshToken(refresh_token)
             return Response({"access": str(refresh.access_token)})
         except Exception:
-            return Response({"error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST
+            )
