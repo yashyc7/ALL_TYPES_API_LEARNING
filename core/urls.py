@@ -21,13 +21,16 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework.routers import DefaultRouter
 from rest_framework import permissions
-from api.views import UserViewset, AuthViewset
+from api.views import UserViewset, AuthViewset, UserViewset1, UserViewset2
 from django.conf import settings
 from django.conf.urls.static import static
 
 router = DefaultRouter()
 router.register(r"users", UserViewset, basename="user")
 router.register(r"auth", AuthViewset, basename="auth")
+router.register(r"api/v1/users", UserViewset1, basename="api/v1/users")
+router.register(r"api/v2/users", UserViewset2, basename="api/v2/users")
+
 
 # Schema View
 schema_view = get_schema_view(

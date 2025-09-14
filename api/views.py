@@ -17,6 +17,8 @@ from .serializers import (
     ProfileSerializer,
     BookSerializer,
     ReaderSerializer,
+    UserSerializerV1,
+    UserSerializerV2,
 )
 from .models import UserProfile, UserFile, Profile, Book, Reader
 
@@ -231,6 +233,27 @@ class BookViewset(viewsets.ViewSet):
 
 class ReaderViewset(viewsets.ViewSet):
     def list(self, request):
-        readers = Reader.objects.prefetch_related("books")
+        readers = Reader.objects.prefetch_related(
+            "books"
+        )  # when you bring the reader object also bring the books objects with it to serialize you understand ?
         serializer = ReaderSerializer(readers, many=True)
         return Response(serializer.data)
+
+
+# versioning api's so below i am creating two api's for the differnet versions
+
+
+class UserViewset1(viewsets.ViewSet):
+    def list(self, request):
+        users = User.objects.all()
+        serializer = UserSerializerV1(users, many=True)
+        return Response(
+            serializer.data,
+        )
+
+
+class UserViewset2(viewsets.ViewSet):
+    def list(self, request):
+        users = User.objects.all()
+        serializers = UserSerializerV2(users, many=True)
+        return Response(serializers.data)

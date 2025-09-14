@@ -77,3 +77,23 @@ class ReaderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reader
         fields = ["id", "name", "books"]
+
+
+# versioning serializers
+
+
+class UserSerializerV1(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email"]  # basic info
+
+
+class UserSerializerV2(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "full_name"]
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
