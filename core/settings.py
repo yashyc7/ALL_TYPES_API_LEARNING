@@ -144,6 +144,14 @@ REST_FRAMEWORK = {
     "DEFAULT_VERSION": "v1",
     "ALLOWED_VERSIONS": ("v1", "v2"),
     "VERSION_PARAM": "version",
+    "DEFAULT_THROTTLE_CLASSES":[
+        "rest_framework.throttling.UserRateThrottle",
+        "rest_framework.throttling.AnonRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES":{
+        "user":"100/minute",
+        "anon":"10/minute"  #these are the scopes which can be accesed via definining throttle_scope in api view 
+    }
 }
 
 SWAGGER_SETTINGS = {
@@ -160,3 +168,15 @@ SWAGGER_SETTINGS = {
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
+}
+
+
+#FOR REAL WORLD PROJECS ,replace it with the redis one 
+# "BACKEND": "django.core.cache.backends.redis.RedisCache",
+# "LOCATION": "redis://127.0.0.1:6379/1"

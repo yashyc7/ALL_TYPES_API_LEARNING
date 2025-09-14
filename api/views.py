@@ -6,7 +6,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from rest_framework.views import APIView
 
 from .serializers import (
     UserProfileSerializer,
@@ -257,3 +259,15 @@ class UserViewset2(viewsets.ViewSet):
         users = User.objects.all()
         serializers = UserSerializerV2(users, many=True)
         return Response(serializers.data)
+
+
+
+#caching implementation
+
+@method_decorator(cache_page(60*2),name="dispatch")
+class UserCacheListView(APIView):
+    def get(self,request):
+        users=User.objects.all().order_by("id")
+        serializer=UserSerializerV1(users,many=True)
+        return Response(serializer.data)
+

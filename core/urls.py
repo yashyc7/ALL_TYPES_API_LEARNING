@@ -21,15 +21,15 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework.routers import DefaultRouter
 from rest_framework import permissions
-from api.views import UserViewset, AuthViewset, UserViewset1, UserViewset2
+from api.views import UserViewset, AuthViewset, UserViewset1, UserViewset2,UserCacheListView
 from django.conf import settings
 from django.conf.urls.static import static
 
 router = DefaultRouter()
 router.register(r"users", UserViewset, basename="user")
 router.register(r"auth", AuthViewset, basename="auth")
-router.register(r"api/v1/users", UserViewset1, basename="api/v1/users")
-router.register(r"api/v2/users", UserViewset2, basename="api/v2/users")
+router.register(r"v1/users", UserViewset1, basename="v1/users")
+router.register(r"v2/users", UserViewset2, basename="v2/users")
 
 
 # Schema View
@@ -62,6 +62,7 @@ urlpatterns = [
         name="schema-swagger-ui",
     ),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
+    path("api/cache_user/",UserCacheListView.as_view())
 ]
 
 
